@@ -1,9 +1,13 @@
-const axios = require("axios");
+import axios from "axios";
 
 export default async function handler(req, res) {
     const apiKey = process.env.SMSHUB_API_KEY; 
     const country = "7";  // Malaysia
     const service = "aik"; // Zus Coffee
+
+    if (!apiKey) {
+        return res.status(500).json({ error: "API key is missing from environment variables" });
+    }
 
     try {
         const response = await axios.get(
