@@ -1,17 +1,24 @@
+const axios = require("axios");
+
 export default async function handler(req, res) {
-    const API_KEY = process.env.SMSHUB_API_KEY;
-    const COUNTRY_CODE = 6; // Malaysia
-    const SERVICE_CODE = "zus"; // Zus Coffee
+    const apiKey = process.env.SMSHUB_API_KEY; 
+    const country = "7";  // Malaysia
+    const service = "aik"; // Zus Coffee
 
-    const url = `https://smshub.org/stubs/handler_api.php?api_key=${API_KEY}&action=getNumber&service=${SERVICE_CODE}&country=${COUNTRY_CODE}`;
+    try {
+        const response = await axios.get(
+            `https://smshub.org/stubs/handler_api.php?api_key=${apiKey}&action=getNumber&service=${service}&country=${country}`
+        );
 
-    const response = await fetch(url);
-    const data = await response.text();
-
-    if (data.startsWith("ACCESS_NUMBER")) {
-        const [, id, phone] = data.split(":");
-        res.json({ id, phone });
-    } else {
-        res.status(500).json({ error: "Failed to get a phone number", details: data });
+        if (response.data.includes("ACCESS_NUMBER")) {
+            const parts = response.data.split(":");
+            const id = parts[1]; 
+            const number = parts[2]; 
+            res.status(200).json({ id, number });
+        } else {
+            res.status(400).json({ error: "Failed to get a phone number", details: response.data });
+        }
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 }
